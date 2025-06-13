@@ -1,37 +1,110 @@
-// Import necessary hooks and components from react-router-dom and other libraries.
-import { Link, useParams } from "react-router-dom";  // To use link for navigation and useParams to get URL parameters
-import PropTypes from "prop-types";  // To define prop types for this component
-import rigoImageUrl from "../assets/img/rigo-baby.jpg"  // Import an image asset
-import useGlobalReducer from "../hooks/useGlobalReducer";  // Import a custom hook for accessing the global state
+import { useParams, Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import chewbaccaImg from "../assets/img/Chewbacca.png"; // Imagen para personajes
+import planetImage from "../assets/img/planets.jpg";     // Imagen genérica para planetas
+import vehicleImage from "../assets/img/vehicles.jpg";   // Imagen genérica para vehículos
 
-// Define and export the Single component which displays individual item details.
-export const Single = props => {
-  // Access the global state using the custom hook.
-  const { store } = useGlobalReducer()
+const Single = () => {
+  const { type, uid } = useParams(); // Obtenemos los parámetros de la URL
+  const [details, setDetails] = useState(null); // Estado para almacenar detalles
 
-  // Retrieve the 'theId' URL parameter using useParams hook.
-  const { theId } = useParams()
-  const singleTodo = store.todos.find(todo => todo.id === parseInt(theId));
+  useEffect(() => {
+    // Determina correctamente el endpoint basado en el tipo
+    const apiType =
+      type === "character"
+        ? "people"
+        : type === "planet"
+        ? "planets"
+        : type === "vehicle"
+        ? "vehicles"
+        : type;
+
+    const fetchDetails = async () => {
+      try {
+        const res = await fetch(`https://www.swapi.tech/api/${apiType}/${uid}/`);
+
+        // Verifica que la respuesta sea JSON
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("La respuesta no es JSON");
+        }
+
+        const data = await res.json();
+
+        if (data.result) {
+          setDetails(data.result); // Guardamos el objeto completo
+        } else {
+          console.error("No se encontraron detalles.");
+        }
+      } catch (error) {
+        console.error("Error al obtener detalles:", error);
+      }
+    };
+
+    fetchDetails();
+  }, [type, uid]);
 
   return (
-    <div className="container text-center">
-      {/* Display the title of the todo element dynamically retrieved from the store using theId. */}
-      <h1 className="display-4">Todo: {singleTodo?.title}</h1>
-      <hr className="my-4" />  {/* A horizontal rule for visual separation. */}
+    <div className="container mt-5 text-center">
+      {details ? (
+        <>
+          <h1 className="mb-3">{details.properties.name}</h1>
 
-      {/* A Link component acts as an anchor tag but is used for client-side routing to prevent page reloads. */}
-      <Link to="/">
-        <span className="btn btn-primary btn-lg" href="#" role="button">
-          Back home
-        </span>
-      </Link>
+          {/*  Mostrar imagen dependiendo del tipo */}
+          {type === "character" ? (
+            <img
+              src={chewbaccaImg}
+              alt={details.properties.name}
+              className="img-fluid mb-4"
+              style={{ maxHeight: "400px" }}
+            />
+          ) : type === "planet" ? (
+            <img
+              src={planetImage}
+              alt={details.properties.name}
+              className="img-fluid mb-4"
+              style={{ maxHeight: "400px" }}
+            />
+          ) : type === "vehicle" ? (
+            <img
+              src={vehicleImage}
+              alt={details.properties.name}
+              className="img-fluid mb-4"
+              style={{ maxHeight: "400px" }}
+            />
+          ) : (
+            <img
+              src="https://starwars-visualguide.com/assets/img/placeholder.jpg"
+              alt="Imagen no disponible"
+              className="img-fluid mb-4"
+              style={{ maxHeight: "400px" }}
+            />
+          )}
+
+          {/*  Descripción si está disponible */}
+          <p>
+            <strong>Descripción:</strong>{" "}
+            {details.description || "Sin descripción disponible."}
+          </p>
+
+          {/*  Mostrar propiedades dinámicamente */}
+          <div className="text-start mt-4">
+            {Object.entries(details.properties).map(([key, value]) => (
+              <p key={key}>
+                <strong>{key}:</strong> {value}
+              </p>
+            ))}
+          </div>
+
+          <Link to="/" className="btn btn-warning mt-4">
+            ⬅ Volver al inicio
+          </Link>
+        </>
+      ) : (
+        <p>Cargando detalles...</p>
+      )}
     </div>
   );
 };
 
-// Use PropTypes to validate the props passed to this component, ensuring reliable behavior.
-Single.propTypes = {
-  // Although 'match' prop is defined here, it is not used in the component.
-  // Consider removing or using it as needed.
-  match: PropTypes.object
-};
+export default Single;

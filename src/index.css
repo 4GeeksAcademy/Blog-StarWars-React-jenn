@@ -1,0 +1,31 @@
+body {
+  background-color: black;
+  color: white;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+}
+
+.container {
+  background-color: black;
+  border-radius: 10px;
+  padding: 20px;
+  color: white;
+}
+
+.btn-warning {
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.5);
+  font-weight: 600;
+}
+
+.navbar {
+  background-color: #FFD700 !important;
+}
+
+.navbar .navbar-brand,
+.navbar .favorites-container {
+  background-color: black;
+  padding: 10px 15px;
+  border-radius: 5px;
+}
